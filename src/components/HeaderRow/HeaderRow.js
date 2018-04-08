@@ -1,7 +1,19 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 
-import { HeaderRowContainer, HeaderRowStyle, HeaderDataColumn } from '../RowElement'
+import { RowBaseContainer, RowBase, ColumnBase } from '../RowElement'
+
+// Header Row
+const HeaderRowContainer = RowBaseContainer.extend`
+  background-color: red
+`;
+
+const HeaderRowStyle = RowBase.extend`
+  text-align: left;
+`;
+
+const HeaderDataColumn = ColumnBase.extend`
+`;
 
 class HeaderRow extends Component {
   constructor(props) {

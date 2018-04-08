@@ -1,7 +1,23 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 
-import { DataRowContainer, DataRowStyle, LeftDataColumn, RightDataColumn } from '../RowElement'
+import { RowBaseContainer, RowBase, ColumnBase } from '../RowElement'
+
+const DataRowContainer = RowBaseContainer.extend`
+  background-color: pink
+`;
+
+const DataRowStyle = RowBase.extend`
+  text-align: center;
+`;
+
+const LeftDataColumn = ColumnBase.extend`
+  width: 100px;
+  border-right: 1px solid grey;
+`;
+
+const RightDataColumn = ColumnBase.extend`
+`;
 
 class DataRow extends Component {
   constructor(props) {
