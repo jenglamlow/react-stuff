@@ -7,6 +7,7 @@ class App extends Component {
     return (
       <div className="App">
         <Toggle label="Yeah" type="A" />
+        <Toggle label="Cool" type="B" />
       </div>
     );
   }

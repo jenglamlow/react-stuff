@@ -8,6 +8,7 @@ let inactive = null;
 const Toggle = styled.div`
   margin-left: 10px;
   user-select: none;
+  display: inline-block;
 
   > input {
       display: none;
@@ -15,16 +16,18 @@ const Toggle = styled.div`
 
   > label {
       font-size: 12px;
+
   }
 
   > label:before {
       content: '';
-      width: 18px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       display: inline-block;
       text-transform: capitalize;
       margin-right: 5px;
       background: ${props => `url(${inactive}) no-repeat`};
+      vertical-align: middle;
       background-position: center;
       background-size: contain;
   }
@@ -51,12 +54,12 @@ class ToggleButton extends Component {
     // Can't load dynamically based on variable, need to use switch case load manually
     switch (this.props.type) {
       case "A":
-        // active = require('');
-        // inactive = require('');
+        active = require('../../img/on.png');
+        inactive = require('../../img/off.png');
         break;
       case "B":
-        // active = require('');
-        // inactive = require('');
+        active = require('../../img/switch-on.png');
+        inactive = require('../../img/switch-off.png');
         break;
       case "C":
         // active = require('');
