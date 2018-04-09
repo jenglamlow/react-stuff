@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { RowBaseContainer, RowBase, ColumnBase } from '../RowElement'
+import { RowBaseContainer, RowBase, ColumnBase } from '../RowElement';
 
 // Header Row
 const HeaderRowContainer = RowBaseContainer.extend`
