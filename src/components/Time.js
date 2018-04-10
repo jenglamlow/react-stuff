@@ -149,13 +149,20 @@ class Time extends Component {
 
   render() {
     return (
-      <TimeContainer>
-        <canvas ref={this.setCanvasRef} 
-                style={canvasStyle} 
-                height={canvasHeight} 
-                width={this.state.width} 
-                onClick={this.handleClick}></canvas>
-      </TimeContainer>
+      <div>
+        <TimeContainer>
+          <canvas ref={this.setCanvasRef} 
+                  style={canvasStyle} 
+                  height={canvasHeight} 
+                  width={this.state.width} 
+                  onClick={this.handleClick}></canvas>
+        </TimeContainer>
+        <br/>
+        <div>
+          <input type="range" min="1" max="100" id="myRange"/>
+        </div>
+      </div>
+      
     );
   }
 }
