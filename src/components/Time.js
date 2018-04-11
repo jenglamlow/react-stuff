@@ -3,6 +3,10 @@ import styled from 'styled-components';
 
 const canvasHeight = 30;
 const canvasWidthOffset = 0;
+const minStepSize = 5;
+const maxStepSize = 20;
+const initialMajorNum = 5;
+
 const canvasStyle = {
   verticalAlign: "bottom"
 };
@@ -87,10 +91,11 @@ class Time extends Component {
     this.setState({width: length});
     // this.writeText(length.toString(), 100, 10);
     this.drawLine(length);
-    var majorNum = parseInt(length/75, 10) + 1;
+    const majorStepSize = length / (initialMajorNum + 2);
+    const minorStepSize = majorStepSize/15;
 
-    for (let i = 0; i < majorNum; i++) {
-      this.drawScale(i*75, this.msToTimecode(10000 * (i/majorNum), 30), 15, 5);
+    for (let i = 0; i < 7; i++) {
+      this.drawScale(i*majorStepSize, this.msToTimecode(10000 * (i/7), 30), 15, minorStepSize);
     }
   }
 
