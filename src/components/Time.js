@@ -22,11 +22,13 @@ class Time extends Component {
     super(props);
 
     this.state = {
-      width: window.innerWidth - canvasWidthOffset
+      width: 0
     };
 
     this.canvasRef = null;
     this.ctx = null;
+    this.windowWidth = document.body.clientWidth;
+    this.lastMajor = initialMajorNum;
 
     // Bind 'this' property into the event handler
     this.handleResize = this.handleResize.bind(this);
@@ -57,7 +59,13 @@ class Time extends Component {
   // Handler
   //================================================================================
   handleResize() {
-    this.redrawCanvas();
+    const windowWidth = document.body.clientWidth;
+
+    // Only fire redraw when width change
+    if (this.windowWidth != windowWidth) {
+      this.redrawCanvas();
+      this.windowWidth = windowWidth;
+    }
   }
 
   handleClick(e) {
@@ -70,6 +78,27 @@ class Time extends Component {
   //================================================================================
   // Helper Functions
   //================================================================================
+
+  computeMinStepSize(length, majorNum) {
+    let majorStepSize = length / majorNum;
+    let minorStepSize = majorStepSize / 15;
+
+    // Base case: Stop when min <= minorStepSize <= max
+    if ((minStepSize <= minorStepSize) && (minorStepSize <= maxStepSize)) {
+      // Make major number even 
+      majorNum = majorNum % 2 != 0 ? majorNum + 1 : majorNum;
+      return [minorStepSize, majorStepSize, majorNum];
+    }
+
+    if (minorStepSize > maxStepSize) {
+      majorNum = Math.ceil(majorNum * 2);
+    } else if (minorStepSize < minStepSize) {
+      majorNum = Math.floor(majorNum / 2);
+    }
+
+    // Further compute
+    return this.computeMinStepSize(length, majorNum);
+  }
 
   msToTimecode(duration, fps) {
     let frames = parseInt((duration/1000 * fps) % fps, 10);
@@ -87,16 +116,29 @@ class Time extends Component {
   }
 
   redrawCanvas() {
-    let length = window.innerWidth - canvasWidthOffset;
-    this.setState({width: length});
-    // this.writeText(length.toString(), 100, 10);
-    this.drawLine(length);
-    const majorStepSize = length / (initialMajorNum + 2);
-    const minorStepSize = majorStepSize/15;
+    let length = this.canvasRef.parentNode.clientWidth;
 
-    for (let i = 0; i < 7; i++) {
-      this.drawScale(i*majorStepSize, this.msToTimecode(10000 * (i/7), 30), 15, minorStepSize);
-    }
+    // Callback method to ensure that the canvas is drawn during initialization
+    this.setState({ width: length }, () => {
+      // show canvas
+      this.canvasRef.style.display = "";
+      this.ctx.clearRect(0, 0, length, canvasHeight);
+
+      this.drawLine(length);
+
+      // Prevent division by zero
+      if (length >= 80) {
+        let [minorStepSize, majorStepSize, majorNum] = this.computeMinStepSize(length, this.lastMajor);
+
+        for (let i = 0; i < majorNum; i++) {
+          this.drawScale(i * majorStepSize, this.msToTimecode(10000 * (i / majorNum), 30), 15, minorStepSize);
+        }
+        this.lastMajor = majorNum;
+      } else {
+        // Draw the smallest scale when shrink to the smallest
+        this.drawScale(0, this.msToTimecode(0, 30), 15, minStepSize);
+      }
+    });
   }
 
   writeText(text, x, y) {
