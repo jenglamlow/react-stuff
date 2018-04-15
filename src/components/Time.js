@@ -1,10 +1,22 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
+
 const canvasHeight = 30;
 const minStepSize = 5;
 const maxStepSize = 20;
 const initialMajorNum = 5;
+
+let time_scale = 1;
+
+const slider = {
+    min: -1,
+    max: +1,
+    value: 0,
+    step: 0.01
+};
 
 const canvasStyle = {
   verticalAlign: "bottom"
@@ -14,6 +26,10 @@ const TimeContainer = styled.div`
   margin: 0;
   padding: 0;
   background:rgb(22,22,22)
+`;
+
+const SliderContainer = styled.div`
+  padding: 10px;
 `;
 
 class Time extends Component {
@@ -32,6 +48,7 @@ class Time extends Component {
     // Bind 'this' property into the event handler
     this.handleResize = this.handleResize.bind(this);
     this.handleClick = this.handleClick.bind(this);
+    this.handleSlider = this.handleSlider.bind(this);
     this.redrawCanvas = this.redrawCanvas.bind(this);
 
     // Callback to bind the DOM ref
@@ -74,7 +91,13 @@ class Time extends Component {
     console.log("x coords: " + x + ", y coords: " + y);
   }
 
-  //================================================================================
+  handleSlider(value) {
+    time_scale = Math.pow(1000, value);
+    // time_scale = value;
+    this.redrawCanvas();
+  }
+
+  //===============================================================================
   // Helper Functions
   //================================================================================
 
@@ -126,12 +149,15 @@ class Time extends Component {
 
       this.drawLine(length);
 
+      length = length * time_scale;
+
       // Prevent division by zero
       if (length >= 80) {
         let [minorStepSize, majorStepSize, majorNum] = this.computeMinStepSize(length, this.lastMajor);
+        console.log(minorStepSize, majorStepSize, majorNum);
 
         for (let i = 0; i < majorNum; i++) {
-          this.drawScale(i * majorStepSize, this.msToTimecode(10000 * (i / majorNum), 30), 15, minorStepSize);
+          this.drawScale(i * majorStepSize, (10000 * (i / majorNum)).toFixed(2), 15, minorStepSize);
         }
         this.lastMajor = majorNum;
       } else {
@@ -204,6 +230,10 @@ class Time extends Component {
                   width={this.state.width} 
                   onClick={this.handleClick}></canvas>
         </TimeContainer>
+        <br/>
+        <SliderContainer>
+            <Slider min={slider.min} max={slider.max} defaultValue={slider.value} step={slider.step} onChange={this.handleSlider}></Slider>
+        </SliderContainer>
       </div>
       
     );

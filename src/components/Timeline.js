@@ -14,8 +14,20 @@ const slider = {
     min: -1,
     max: +1,
     value: 0,
-    step: 0.1
+    step: 0.001
 };
+
+// const slider = {
+//       min: 1,
+//       max: 100,
+//       value: 50,
+//       step: 0.5
+// };
+  
+
+let videoLine = 0;
+let time_scale = 1;
+////
 
 const canvasStyle = {
   verticalAlign: "bottom"
@@ -47,7 +59,7 @@ class Timeline extends Component {
     // Bind 'this' property into the event handler
     this.handleResize = this.handleResize.bind(this);
     this.handleClick = this.handleClick.bind(this);
-    this.redrawCanvas = this.redrawCanvas.bind(this);
+    this.handleSlider = this.handleSlider.bind(this);
 
     // Callback to bind the DOM ref
     this.setCanvasRef = dom => {
@@ -62,7 +74,7 @@ class Timeline extends Component {
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
     this.ctx = this.canvasRef.getContext('2d');
-    this.redrawCanvas();
+    this.initCanvas();
   }
 
   componentWillUnmount() {
@@ -90,7 +102,9 @@ class Timeline extends Component {
   }
 
   handleSlider(value) {
-      console.log(value);
+      time_scale = Math.pow(100, value);
+      // time_scale = value;
+      this.redrawCanvas();
   }
 
   //================================================================================
@@ -128,10 +142,10 @@ class Timeline extends Component {
     minutes = (minutes < 10) ? "0" + minutes : minutes;
     seconds = (seconds < 10) ? "0" + seconds : seconds;
     frames = (frames < 10) ? "0" + frames : frames;
-    frames = ":00";
+    // frames = ":00";
   
     // Temporary hardcode the frame to 00
-    return hours + ":" + minutes + ":" + seconds + frames;
+    return hours + ":" + minutes + ":" + seconds + ":" + frames;
   }
 
   redrawCanvas() {
@@ -143,7 +157,71 @@ class Timeline extends Component {
       this.canvasRef.style.display = "";
       this.ctx.clearRect(0, 0, length, canvasHeight);
 
-      this.drawLine(length);
+      this.drawLine(videoLine);
+
+      this.drawTimeScale(length);
+      
+    });
+  }
+
+  isPowerOfTwo(x)
+  {
+    return (x & (x - 1)) == 0;
+  }
+    
+  drawTimeScale(length) {
+    const duration = 10000;
+    // time scale [0.01 - 100]
+    // units = distance between marker (pixels)
+    var units = ((time_scale * 100)  % 100) + 100;
+    let scaled_width = length * time_scale;
+
+    var count = scaled_width / 100;
+    var screen_count = length / units;
+
+    console.log('before', count, screen_count, units, time_scale, scaled_width);
+
+    count = Math.pow(2, Math.ceil(Math.log10(count)/Math.log10(2)) + 1);
+    screen_count = Math.pow(2, Math.ceil(Math.log(screen_count)/Math.log(2)));
+
+    console.log('after', count, screen_count);
+    
+    
+    for (let i = 0; i < count; i++)
+    {
+      var t = (i * (duration / count));
+      this.drawLabel(parseInt(t).toString(), i * units);
+    }
+  }
+
+  drawLabel(text, x) {
+    const barHeight = 15;
+    const y0 = canvasHeight - 2;
+    const y1 = y0 - barHeight;
+    const x0 = x + 0.5;
+
+    this.ctx.lineWidth = 1;
+    this.ctx.strokeStyle = "#808080";
+    this.ctx.beginPath();
+    this.ctx.moveTo(x0, y0);
+    this.ctx.lineTo(x0, y1);
+    this.ctx.stroke();
+    this.writeText(text, x, y1 - 2);
+  }
+
+  initCanvas() {
+    let length = this.canvasRef.parentNode.clientWidth;
+
+    // Callback method to ensure that the canvas is drawn during initialization
+    this.setState({ width: length }, () => {
+      // show canvas
+      this.canvasRef.style.display = "";
+      this.ctx.clearRect(0, 0, length, canvasHeight);
+
+      videoLine = length * 0.75;
+      this.drawLine(videoLine);
+
+      this.drawTimeScale(length);
     });
   }
 
