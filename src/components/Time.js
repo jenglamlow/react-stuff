@@ -204,10 +204,6 @@ class Time extends Component {
                   width={this.state.width} 
                   onClick={this.handleClick}></canvas>
         </TimeContainer>
-        <br/>
-        <div>
-          <input type="range" min="1" max="100" id="myRange"/>
-        </div>
       </div>
       
     );
