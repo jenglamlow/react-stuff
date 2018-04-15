@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 
 const canvasHeight = 30;
-const canvasWidthOffset = 0;
 const minStepSize = 5;
 const maxStepSize = 20;
 const initialMajorNum = 5;
@@ -62,7 +61,7 @@ class Time extends Component {
     const windowWidth = document.body.clientWidth;
 
     // Only fire redraw when width change
-    if (this.windowWidth != windowWidth) {
+    if (this.windowWidth !== windowWidth) {
       this.redrawCanvas();
       this.windowWidth = windowWidth;
     }
@@ -86,7 +85,7 @@ class Time extends Component {
     // Base case: Stop when min <= minorStepSize <= max
     if ((minStepSize <= minorStepSize) && (minorStepSize <= maxStepSize)) {
       // Make major number even 
-      majorNum = majorNum % 2 != 0 ? majorNum + 1 : majorNum;
+      majorNum = majorNum % 2 !== 0 ? majorNum + 1 : majorNum;
       return [minorStepSize, majorStepSize, majorNum];
     }
 
@@ -110,9 +109,10 @@ class Time extends Component {
     minutes = (minutes < 10) ? "0" + minutes : minutes;
     seconds = (seconds < 10) ? "0" + seconds : seconds;
     frames = (frames < 10) ? "0" + frames : frames;
+    frames = ":00";
   
     // Temporary hardcode the frame to 00
-    return hours + ":" + minutes + ":" + seconds + ":00";
+    return hours + ":" + minutes + ":" + seconds + frames;
   }
 
   redrawCanvas() {
