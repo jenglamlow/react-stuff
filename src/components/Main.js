@@ -5,6 +5,7 @@ import Table from './Table';
 import Button from './Button';
 import Home from './Home';
 import Time from './Time';
+import Timeline from './Timeline';
 
 const Main = () => (
   <main>
@@ -13,6 +14,7 @@ const Main = () => (
       <Route path='/table' component={Table}/>
       <Route path='/button' component={Button}/>
       <Route path='/time' component={Time}/>
+      <Route path='/timeline' component={Timeline}/>
     </Switch>
   </main>
 );
