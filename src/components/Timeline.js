@@ -1,32 +1,20 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
+import Slider from 'rc-slider'; 
+import InputRange from 'react-input-range';
 
 const canvasHeight = 30;
-const minStepSize = 5;
-const maxStepSize = 20;
-const initialMajorNum = 5;
-
 // Slider
 
 const slider = {
     min: -1,
-    max: +1,
+    max: 1,
     value: 0,
-    step: 0.001
+    step: 0.01
 };
 
-// const slider = {
-//       min: 1,
-//       max: 100,
-//       value: 50,
-//       step: 0.5
-// };
-  
-
-let videoLine = 0;
 let time_scale = 1;
+let videoLength = 10000000;
 ////
 
 const canvasStyle = {
@@ -48,13 +36,18 @@ class Timeline extends Component {
     super(props);
 
     this.state = {
-      width: 0
+      width: 0,
+      min: 0,
+      max: 100,
+      value: {
+        max: 100,
+        min: 0,
+      },
     };
 
     this.canvasRef = null;
     this.ctx = null;
     this.windowWidth = document.body.clientWidth;
-    this.lastMajor = initialMajorNum;
 
     // Bind 'this' property into the event handler
     this.handleResize = this.handleResize.bind(this);
@@ -102,47 +95,29 @@ class Timeline extends Component {
   }
 
   handleSlider(value) {
-      time_scale = Math.pow(100, value);
-      // time_scale = value;
-      this.redrawCanvas();
+    // 2 = 2 seconds reso
+    // 4 - quotient
+    const base = Math.ceil(Math.log2(videoLength/(2000 * 4)));
+    time_scale = Math.pow(base, value);
+    this.redrawCanvas();
   }
 
   //================================================================================
   // Helper Functions
   //================================================================================
 
-  computeMinStepSize(length, majorNum) {
-    let majorStepSize = length / majorNum;
-    let minorStepSize = majorStepSize / 15;
+  msToTimecode(d, fps) {
+    // convert milliseconds to seconds
+    let seconds = d / 1000;
+    let hours = Math.floor(seconds / 3600);
+    let minutes = Math.floor((seconds - hours * 3600) / 60);
+    seconds = Math.floor(seconds - minutes * 60 - hours * 3600);
 
-    // Base case: Stop when min <= minorStepSize <= max
-    if ((minStepSize <= minorStepSize) && (minorStepSize <= maxStepSize)) {
-      // Make major number even 
-      majorNum = majorNum % 2 !== 0 ? majorNum + 1 : majorNum;
-      return [minorStepSize, majorStepSize, majorNum];
-    }
-
-    if (minorStepSize > maxStepSize) {
-      majorNum = Math.ceil(majorNum * 2);
-    } else if (minorStepSize < minStepSize) {
-      majorNum = Math.floor(majorNum / 2);
-    }
-
-    // Further compute
-    return this.computeMinStepSize(length, majorNum);
-  }
-
-  msToTimecode(duration, fps) {
-    let frames = parseInt((duration/1000 * fps) % fps, 10);
-    let seconds = parseInt((duration/1000)%60, 10);
-    let minutes = parseInt((duration/(1000*60))%60, 10);
-    let hours = parseInt((duration/(1000*60*60))%24, 10);
-  
     hours = (hours < 10) ? "0" + hours : hours;
     minutes = (minutes < 10) ? "0" + minutes : minutes;
     seconds = (seconds < 10) ? "0" + seconds : seconds;
-    frames = (frames < 10) ? "0" + frames : frames;
-    // frames = ":00";
+    // frames = (frames < 10) ? "0" + frames : frames;
+    let frames = "00";
   
     // Temporary hardcode the frame to 00
     return hours + ":" + minutes + ":" + seconds + ":" + frames;
@@ -157,56 +132,61 @@ class Timeline extends Component {
       this.canvasRef.style.display = "";
       this.ctx.clearRect(0, 0, length, canvasHeight);
 
-      this.drawLine(videoLine);
-
-      this.drawTimeScale(length);
+      this.drawTimeScale(videoLength, length);
       
     });
   }
-
-  isPowerOfTwo(x)
-  {
-    return (x & (x - 1)) == 0;
-  }
     
-  drawTimeScale(length) {
-    const duration = 10000;
+  drawTimeScale(duration, length) {
     // time scale [0.01 - 100]
     // units = distance between marker (pixels)
-    var units = ((time_scale * 100)  % 100) + 100;
-    let scaled_width = length * time_scale;
-
-    var count = scaled_width / 100;
-    var screen_count = length / units;
-
-    console.log('before', count, screen_count, units, time_scale, scaled_width);
-
-    count = Math.pow(2, Math.ceil(Math.log10(count)/Math.log10(2)) + 1);
-    screen_count = Math.pow(2, Math.ceil(Math.log(screen_count)/Math.log(2)));
-
-    console.log('after', count, screen_count);
+    const K = 100;
     
+    const Q = Math.floor(time_scale);
+    const R = (time_scale * K)  % K;
     
+    const units = R + K;  // pixel position
+    
+    let count = length / units;
+    let steps = duration / (4 * Math.pow(2, Q)); //label
+
+    // steps = Math.pow(2, Math.ceil(Math.log10(steps)/Math.log10(2)));
+    // screen_count = Math.pow(2, Math.ceil(Math.log10(screen_count)/Math.log10(2)));
+
+    steps = Math.pow(2, Math.ceil(Math.log2(steps)));
+    count = Math.pow(2, Math.ceil(Math.log2(count)));
+
+    // console.log( steps, Q);
+
+    // Draw Line
+    this.drawLine(duration/steps * units);
+
+    // Draw Label and scale
     for (let i = 0; i < count; i++)
     {
-      var t = (i * (duration / count));
-      this.drawLabel(parseInt(t).toString(), i * units);
+      let t = (i * steps);
+      let labelPos = i * units;
+      this.drawBar({
+        type: 'label',
+        x: labelPos,
+        text: this.msToTimecode(t)
+      });
+      let minorMarker = units/10;
+      for (let j = 0; j < 10; j++) {
+        let minorPos = (j * minorMarker) + labelPos;
+        if (j !== 5) {
+          this.drawBar({
+            type: 'minor',
+            x: minorPos,
+          });
+        } else {
+          this.drawBar({
+            type: 'major',
+            x: minorPos,
+          });
+        }
+      }
     }
-  }
-
-  drawLabel(text, x) {
-    const barHeight = 15;
-    const y0 = canvasHeight - 2;
-    const y1 = y0 - barHeight;
-    const x0 = x + 0.5;
-
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = "#808080";
-    this.ctx.beginPath();
-    this.ctx.moveTo(x0, y0);
-    this.ctx.lineTo(x0, y1);
-    this.ctx.stroke();
-    this.writeText(text, x, y1 - 2);
   }
 
   initCanvas() {
@@ -218,10 +198,7 @@ class Timeline extends Component {
       this.canvasRef.style.display = "";
       this.ctx.clearRect(0, 0, length, canvasHeight);
 
-      videoLine = length * 0.75;
-      this.drawLine(videoLine);
-
-      this.drawTimeScale(length);
+      this.drawTimeScale(videoLength, length);
     });
   }
 
@@ -234,8 +211,10 @@ class Timeline extends Component {
 
   drawBar(data) {
     let barHeight = 7;
-    if (data.type === 'major') {
+    if (data.type === 'label') {
       barHeight = 15;
+    } else if (data.type === 'major') {
+      barHeight = 12;
     }
     const y0 = canvasHeight - 2;
     const y1 = y0 - barHeight;
@@ -263,21 +242,6 @@ class Timeline extends Component {
     this.ctx.stroke();
   }
 
-  drawScale(from, text, step, stepSize) {
-    this.drawBar({
-      type: 'major',
-      x: from,
-      text: text
-    });
-  
-    for (let i = 1; i < step; i++) {
-      this.drawBar({
-        type: 'minor',
-        x: from + stepSize * i
-      });
-    }
-  }
-
   render() {
     return (
       <div>
@@ -290,7 +254,7 @@ class Timeline extends Component {
         </TimeContainer>
         <br/>
         <SliderContainer>
-            <Slider min={slider.min} max={slider.max} defaultValue={slider.value} step={slider.step} onChange={this.handleSlider}></Slider>
+          <Slider min={slider.min} max={slider.max} defaultValue={slider.value} step={slider.step} onChange={this.handleSlider} onBeforeChange={this.handleOnStart}></Slider>
         </SliderContainer>
       </div>
       
