@@ -6,6 +6,7 @@ import Button from './Button';
 import Home from './Home';
 import Time from './Time';
 import Timeline from './Timeline';
+import TimelineDual from './TimelineDual';
 import D3 from './DDD';
 
 const Main = () => (
@@ -16,6 +17,7 @@ const Main = () => (
       <Route path='/button' component={Button}/>
       <Route path='/time' component={Time}/>
       <Route path='/timeline' component={Timeline}/>
+      <Route path='/timelinedual' component={TimelineDual}/>
       <Route path='/d3' component={D3}/>
     </Switch>
   </main>
