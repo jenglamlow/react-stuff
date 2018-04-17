@@ -12,6 +12,7 @@ const HeaderComponent = ({className})  => (
     <Link to='/button'>Button</Link>
     <Link to='/time'>Time</Link>
     <Link to='/timeline'>Timeline</Link>
+    <Link to='/d3'>D3</Link>
   </header>
 );
 
