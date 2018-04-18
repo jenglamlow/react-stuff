@@ -2,12 +2,20 @@ import React, { Component } from 'react';
 import styled from 'styled-components';
 import InputRange from 'react-input-range';
 import './react-input-range.css';
+import 'ion-rangeslider/css/ion.rangeSlider.css';
+import 'ion-rangeslider/css/ion.rangeSlider.skinNice.css';
+
+import $ from 'jquery';
+import ionRangeSlider from 'ion-rangeslider';
 
 
 const canvasHeight = 30;
 
 const videoLength = 5 * 60 * 1000;
-let scale = Math.pow(videoLength/1000, 1/10-0.3);
+const K = 2;
+let factor = Math.ceil(Math.log2((videoLength)/(K * 1000)));
+let scale = 1;
+let frameStart = 0;
 
 const canvasStyle = {
   verticalAlign: "bottom"
@@ -29,20 +37,22 @@ class TimelineDual extends Component {
 
     this.state = {
       width: 0,
-      min: 1,
-      max: 10,
-      step: 0.01,
+      min: 0,
+      max: 1.03,
+      step: 0.001,
       value: {
-        max: 10,
-        min: 1,
+        max: 1.03,
+        min: 0,
       },
       last: {
-        max: 10,
-        min: 1
+        max: 1.03,
+        min: 0
       }
     };
 
     this.canvasRef = null;
+    this.sliderRef = null;
+    this.slider = null;
     this.ctx = null;
     this.windowWidth = document.body.clientWidth;
 
@@ -51,10 +61,15 @@ class TimelineDual extends Component {
     this.handleClick = this.handleClick.bind(this);
     this.handleOnChange = this.handleOnChange.bind(this);
     this.handleOnStart = this.handleOnStart.bind(this);
+    this.handleSlider = this.handleSlider.bind(this);
 
     // Callback to bind the DOM ref
     this.setCanvasRef = dom => {
       this.canvasRef = dom;
+    };
+
+    this.setSliderRef = dom => {
+      this.sliderRef = dom;
     };
   }
 
@@ -64,6 +79,19 @@ class TimelineDual extends Component {
   //================================================================================
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
+
+    $(this.sliderRef).ionRangeSlider({
+        type: "double",
+        min: 0,
+        max: 100,
+        from: 30,
+        to: 70,
+        drag_interval: true,
+        hide_min_max: true,
+        hide_from_to: true,
+        onChange: this.handleSlider
+    }); 
+    this.slider = $(this.sliderRef).data("ionRangeSlider");
     this.ctx = this.canvasRef.getContext('2d');
     this.initCanvas();
   }
@@ -98,26 +126,42 @@ class TimelineDual extends Component {
 
   handleOnChange(value) {
     const last = this.state.last;
-    const from = value.min.toFixed(2);
-    const to = value.max.toFixed(2);
-    const diff = (to - from).toFixed(2);
+    const from = parseFloat(value.min.toFixed(3));
+    const to = parseFloat(value.max.toFixed(3));
+    const diff = parseFloat((to - from).toFixed(3));
 
     // Prevent value exceed limit (bug in slider library)
     if ((value.min < this.state.min) || (value.max > this.state.max)) {
       return;
     }
 
-    console.log(to, from, diff);
     // Keep a minimum gap in the range
-    if (diff < 0.3) {
+    if (diff < 0.03) {
       return;
     }
     
-    scale = Math.pow(videoLength/1000, 1/diff);
+    const deltaFrom = parseFloat((from - this.state.min).toFixed(3));
+    const deltaTo = parseFloat((this.state.max - to).toFixed(3));
+    // [0.000, 1.000]
+    const delta = parseFloat((deltaFrom + deltaTo).toFixed(3));
+    
+    scale = Math.pow(factor, delta);
     
     this.setState({value: value});
 
-    //this.redrawCanvas();
+    frameStart = value.min;
+
+    this.redrawCanvas();
+  }
+
+  handleSlider(value) {
+    // console.log(value);
+    // let diff = value.to - value.from;
+    // if (diff < 4) {
+    //   this.slider.update({
+    //     to: 50
+    //   });
+    // }
   }
 
   //================================================================================
@@ -156,28 +200,34 @@ class TimelineDual extends Component {
   }
     
   drawTimeScale(duration, length) {
-    const steps = duration/scale;
+    let d = duration;
+    const Q = Math.floor(scale);
+    let steps = d/(K * Math.pow(2, Q));
     
-    // units
-    const P0 = 100;
-    const R = (scale * P0) % P0;
-    const units = R + P0;  // pixel position
-    
-    let count = length / units;
-    console.log(steps, scale);
+    // label position calculation
+    const x0 = 100;
+    const dx= (scale * x0) % x0;
+    const units = x0 + dx;  // pixel position
+    const offset = (frameStart *x0 * scale) % units;
+    let count = length / units + offset;
+
+
+    steps = Math.pow(2, Math.ceil(Math.log2(steps)));
+    count = Math.pow(2, Math.ceil(Math.log2(count)));
+    //console.log(d, steps, factor, slider, count);
 
     // Draw Label and scale
     for (let i = 0; i < count; i++)
     {
       let t = (i * steps);
-      let labelPos = (i * units);
+      let labelPos = (i * units) - offset;
       this.drawBar({
         type: 'label',
         x: labelPos,
         text: this.msToTimecode(t)
       });
       let minorMarker = units/10;
-      for (let j = 0; j < 10; j++) {
+      for (let j = 1; j < 10; j++) {
         let minorPos = (j * minorMarker) + labelPos;
         if (j !== 5) {
           this.drawBar({
@@ -261,12 +311,15 @@ class TimelineDual extends Component {
         <SliderContainer>
           <InputRange
             draggableTrack
-            formatLabel={value => value.toFixed(1)}
+            formatLabel={value => ''}
             step={this.state.step}
             maxValue={this.state.max}
             minValue={this.state.min}
             onChange={this.handleOnChange}
             value={this.state.value} />
+        </SliderContainer>
+        <SliderContainer>
+          <input type="text" name="slider" ref={this.setSliderRef} />
         </SliderContainer>
       </div>
       
