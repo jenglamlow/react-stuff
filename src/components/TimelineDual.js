@@ -6,6 +6,9 @@ import './react-input-range.css';
 
 const canvasHeight = 30;
 
+const videoLength = 5 * 60 * 1000;
+let scale = Math.pow(videoLength/1000, 1/10-0.3);
+
 const canvasStyle = {
   verticalAlign: "bottom"
 };
@@ -17,7 +20,7 @@ const TimeContainer = styled.div`
 `;
 
 const SliderContainer = styled.div`
-  padding: 10px;
+  padding: 30px;
 `;
 
 class TimelineDual extends Component {
@@ -26,12 +29,17 @@ class TimelineDual extends Component {
 
     this.state = {
       width: 0,
-      min: 0,
-      max: 100,
+      min: 1,
+      max: 10,
+      step: 0.01,
       value: {
-        max: 100,
-        min: 0,
+        max: 10,
+        min: 1,
       },
+      last: {
+        max: 10,
+        min: 1
+      }
     };
 
     this.canvasRef = null;
@@ -85,23 +93,31 @@ class TimelineDual extends Component {
   }
 
   handleOnStart(data){
-    console.log('start', data);
+    // console.log('start', data);
   }
 
   handleOnChange(value) {
-    console.log('start', value);
+    const last = this.state.last;
+    const from = value.min.toFixed(2);
+    const to = value.max.toFixed(2);
+    const diff = (to - from).toFixed(2);
 
     // Prevent value exceed limit (bug in slider library)
     if ((value.min < this.state.min) || (value.max > this.state.max)) {
       return;
     }
 
+    console.log(to, from, diff);
     // Keep a minimum gap in the range
-    if (value.max - value.min < 3) {
+    if (diff < 0.3) {
       return;
     }
     
+    scale = Math.pow(videoLength/1000, 1/diff);
+    
     this.setState({value: value});
+
+    //this.redrawCanvas();
   }
 
   //================================================================================
@@ -134,39 +150,48 @@ class TimelineDual extends Component {
       this.canvasRef.style.display = "";
       this.ctx.clearRect(0, 0, length, canvasHeight);
 
-    //   this.drawTimeScale(videoLength, length);
+      this.drawTimeScale(videoLength, length);
       
     });
   }
     
   drawTimeScale(duration, length) {
+    const steps = duration/scale;
+    
+    // units
+    const P0 = 100;
+    const R = (scale * P0) % P0;
+    const units = R + P0;  // pixel position
+    
+    let count = length / units;
+    console.log(steps, scale);
 
     // Draw Label and scale
-    // for (let i = 0; i < count; i++)
-    // {
-    //   let t = (i * steps);
-    //   let labelPos = i * units;
-    //   this.drawBar({
-    //     type: 'label',
-    //     x: labelPos,
-    //     text: this.msToTimecode(t)
-    //   });
-    //   let minorMarker = units/10;
-    //   for (let j = 0; j < 10; j++) {
-    //     let minorPos = (j * minorMarker) + labelPos;
-    //     if (j !== 5) {
-    //       this.drawBar({
-    //         type: 'minor',
-    //         x: minorPos,
-    //       });
-    //     } else {
-    //       this.drawBar({
-    //         type: 'major',
-    //         x: minorPos,
-    //       });
-    //     }
-    //   }
-    // }
+    for (let i = 0; i < count; i++)
+    {
+      let t = (i * steps);
+      let labelPos = (i * units);
+      this.drawBar({
+        type: 'label',
+        x: labelPos,
+        text: this.msToTimecode(t)
+      });
+      let minorMarker = units/10;
+      for (let j = 0; j < 10; j++) {
+        let minorPos = (j * minorMarker) + labelPos;
+        if (j !== 5) {
+          this.drawBar({
+            type: 'minor',
+            x: minorPos,
+          });
+        } else {
+          this.drawBar({
+            type: 'major',
+            x: minorPos,
+          });
+        }
+      }
+    }
   }
 
   initCanvas() {
@@ -178,7 +203,7 @@ class TimelineDual extends Component {
       this.canvasRef.style.display = "";
       this.ctx.clearRect(0, 0, length, canvasHeight);
 
-    //   this.drawTimeScale(videoLength, length);
+      this.drawTimeScale(videoLength, length);
     });
   }
 
@@ -236,6 +261,8 @@ class TimelineDual extends Component {
         <SliderContainer>
           <InputRange
             draggableTrack
+            formatLabel={value => value.toFixed(1)}
+            step={this.state.step}
             maxValue={this.state.max}
             minValue={this.state.min}
             onChange={this.handleOnChange}
