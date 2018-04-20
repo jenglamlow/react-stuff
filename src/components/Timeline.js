@@ -14,7 +14,7 @@ const slider = {
 };
 
 let time_scale = 1;
-let videoLength = 10000000;
+let videoLength = 2 * 60 * 1000;
 ////
 
 const canvasStyle = {
@@ -172,7 +172,7 @@ class Timeline extends Component {
         text: this.msToTimecode(t)
       });
       let minorMarker = units/10;
-      for (let j = 0; j < 10; j++) {
+      for (let j = 1; j < 10; j++) {
         let minorPos = (j * minorMarker) + labelPos;
         if (j !== 5) {
           this.drawBar({

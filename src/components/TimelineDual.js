@@ -14,8 +14,10 @@ const canvasHeight = 30;
 const videoLength = 50 * 60 * 1000;
 let minToStart = 0;
 let endToMax = 0;
-let remainingUnit = 0;
-let offset = remainingUnit/ endToMax;
+let remainingUnitR = 0;
+let remainingUnitL = 0;
+let offsetR = remainingUnitR/ endToMax || 0;
+let offsetL = remainingUnitL/ minToStart || 0;
 let start = 0;
 let end = 0;
 
@@ -163,10 +165,10 @@ class TimelineDual extends Component {
 
     scale = Math.pow(base, delta/1000);
 
-    if (delta != lastDelta) {
+    if (delta !== lastDelta) {
       mode ="zoom";
       // if ((to < lastTo) || (from > lastFrom)) {
-      if (from != lastFrom) {
+      if (from !== lastFrom) {
         mode="L";
       } else {
         mode="R";
@@ -273,20 +275,26 @@ class TimelineDual extends Component {
     let d = duration /1000;
 
     if (mode =='pan') {
-      start = start - (offset * diffPan);
+      start = start - (offsetR * diffPan);
+      end = end - (offsetL * diffPan);
       start = start > 0 ? 0 : start;
-    } else if (mode != "init") {
-      // zoom
+    } else if (mode !== "init") {
       let K = 100;
       const R = (scale * K)  % K;
       units = R + K;  // pixel position
 
       const Q = Math.floor(scale);
       steps = d / (C * Math.pow(2, Q));
-
-      remainingUnit = (length * Math.pow(2, Q-1) * (scale % 1 + 1)) - length;
-      // console.log(remainingUnit, scale, Q);
-      offset = remainingUnit/ endToMax;
+      // zoom
+      if (mode === 'R') { 
+        remainingUnitR = (length * Math.pow(2, Q-1) * (scale % 1 + 1)) - length;
+        // console.log(remainingUnit, scale, Q);
+        offsetR = remainingUnitR/endToMax || 0;
+      } else {
+        remainingUnitL = (length * Math.pow(2, Q-1) * (scale % 1 + 1)) - length;
+        offsetL = remainingUnitL/minToStart || 0;
+      }
+      console.log(start, end);
     }
 
     steps = Math.pow(2, Math.ceil(Math.log2(steps)));
@@ -294,11 +302,11 @@ class TimelineDual extends Component {
     let viewCount = length/units + 1;
 
     let startLocation = Math.abs(start/units) * steps;
-    console.log('start', startLocation, 'end', startLocation + (viewCount-1) * steps);
+    // console.log('start', startLocation, 'end', startLocation + (viewCount-1) * steps);   
 
     for (let i = 0; i < viewCount; i++)
     {
-      let labelPos = (i * units) + (start % units) + end;
+      let labelPos = (i * units) + (start % units) ;
       this.drawBar({
         type: 'label',
         x: labelPos,
