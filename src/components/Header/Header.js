@@ -10,10 +10,9 @@ const HeaderComponent = ({className})  => (
     <Link to='/'>Home</Link>
     <Link to='/table'>Table</Link>
     <Link to='/button'>Button</Link>
-    <Link to='/time'>Time</Link>
     <Link to='/timeline'>Timeline</Link>
     <Link to='/timelinedual'>TimelineDual</Link>
-    {/* <Link to='/d3'>D3</Link> */}
+    <Link to='/d3'>D3</Link>
   </header>
 );
 
