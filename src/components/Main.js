@@ -4,7 +4,6 @@ import { Switch, Route } from 'react-router-dom';
 import Table from './Table';
 import Button from './Button';
 import Home from './Home';
-import Time from './Time';
 import Timeline from './Timeline';
 import TimelineDual from './TimelineDual';
 import D3 from './DDD';
