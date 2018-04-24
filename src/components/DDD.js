@@ -3,10 +3,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import * as d3 from 'd3';
-// import { scaleTime, scaleLinear } from 'd3-scale';
-// import { select } from 'd3-selection';
-// import { axisTop } from 'd3-axis';
-// import { format } from 'd3-format';
 
 // slider
 import InputRange from 'react-input-range';
