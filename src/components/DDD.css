@@ -1,0 +1,23 @@
+.labelMarker line {
+    stroke: #808080;
+}
+
+.labelMarker path {
+    stroke: #808080;
+}
+
+.labelMarker text {
+    fill: #808080;
+}
+
+.minorMarker line {
+    stroke: #808080;
+}
+
+.minorMarker path {
+    stroke: #808080;
+}
+
+.minorMarker text {
+    fill: #808080
+}
