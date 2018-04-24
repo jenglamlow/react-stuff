@@ -1,3 +1,24 @@
-.ReactTable .rt-tr:hover .rt-td {
-	background: yellow
+.ReactTable .rt-tbody .rt-tr-group:hover{
+    border: 1px solid lightblue;
+}
+
+.ReactTable {
+}
+
+.ReactTable .rt-tr-group{
+    border: 1px solid transparent;
+}
+
+.ReactTable .rt-tr .rt-td {
+	color: pink
+}
+
+.ReactTable .rt-tr .rt-resizable-header-content {
+	color: lightblue
+}
+
+.ReactTable {
+    padding: 0;
+    margin: 0;
+    border-spacing: 0;
 }
