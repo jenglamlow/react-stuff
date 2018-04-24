@@ -6,6 +6,7 @@ import Button from './Button';
 import Home from './Home';
 import Timeline from './Timeline';
 import TimelineDual from './TimelineDual';
+import ReactTableExample from './ReactTableExample';
 import D3 from './DDD';
 
 const Main = () => (
@@ -13,6 +14,7 @@ const Main = () => (
     <Switch>
       <Route exact path='/' component={Home}/>
       <Route path='/table' component={Table}/>
+      <Route path='/react-table' component={ReactTableExample}/>
       <Route path='/button' component={Button}/>
       <Route path='/timeline' component={Timeline}/>
       <Route path='/timelinedual' component={TimelineDual}/>

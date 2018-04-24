@@ -9,6 +9,7 @@ const HeaderComponent = ({className})  => (
   <header className={className}>
     <Link to='/'>Home</Link>
     <Link to='/table'>Table</Link>
+    <Link to='/react-table'>React Table</Link>
     <Link to='/button'>Button</Link>
     <Link to='/timeline'>Timeline</Link>
     <Link to='/timelinedual'>TimelineDual</Link>
