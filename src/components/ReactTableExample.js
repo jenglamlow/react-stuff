@@ -1,12 +1,48 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import ReactTable from 'react-table';
+import $ from 'jquery';
 
 import 'react-table/react-table.css';
 import './react-table.css';
 
 const data = [{
   name: 'Tanner Linsleyasdddddddddddddddddddddddddddddadasdddddddddddddsasdddddddddddddddddddddddddd',
+  age: 26,
+  friend: {
+    name: 'Jason Maurer',
+    age: 23,
+  }
+}, {
+  name: 'Tanner Linsley',
+  age: 26,
+  friend: {
+    name: 'Jason Maurer',
+    age: 23,
+  }
+}, {
+  name: 'Tanner Linsley',
+  age: 26,
+  friend: {
+    name: 'Jason Maurer',
+    age: 23,
+  }
+}, {
+  name: 'Tanner Linsley',
+  age: 26,
+  friend: {
+    name: 'Jason Maurer',
+    age: 23,
+  }
+}, {
+  name: 'Tanner Linsley',
+  age: 26,
+  friend: {
+    name: 'Jason Maurer',
+    age: 23,
+  }
+}, {
+  name: 'Tanner Linsley',
   age: 26,
   friend: {
     name: 'Jason Maurer',
@@ -45,6 +81,12 @@ class ReactTableExample extends Component {
     };
   }
 
+  componentDidMount() {
+    $(".rt-tbody").on("scroll", function() {
+      console.log('hey hey hey');
+    });
+  }
+
   render() {
     return (
       <div>
@@ -54,6 +96,10 @@ class ReactTableExample extends Component {
           minRows = {0}
           columns={columns}
           className="-highlight"
+          style={{
+            height: "200px",
+            width: "800px"
+          }}
           getTrGroupProps={(params, rowInfo) => {
             let style = {};
             if (rowInfo.index === this.state.highlightedIndex) {
