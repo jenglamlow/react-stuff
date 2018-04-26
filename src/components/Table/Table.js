@@ -16,7 +16,7 @@ class Table extends Component {
         <RowHeader/>
         <RowData/>
         <RowData/>
-        <div class="table-container">
+        <div className="table-container">
           <table>
               <thead>
                   <tr>

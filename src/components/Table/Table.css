@@ -1,5 +1,5 @@
 .table-container {
-    height: 10em;
+    height: 100%;
 }
 table {
     display: flex;
@@ -7,14 +7,32 @@ table {
     height: 100%;
     width: 100%;
 }
-table thead {
-    /* head takes the height it requires, 
-    and it's not scaled when table is resized */
-    flex: 0 0 auto;
+table thead tr{
+    flex: 1 1 auto;
     width: calc(100% - 1.45em);
-    display: table;
+    display: flex;
     table-layout: fixed;
 }
+
+table thead tr th:nth-child(1){
+    color: red;
+    flex-grow: 4
+}
+table thead tr th:nth-child(2){
+    color: blue;
+    flex-grow: 3
+}
+table thead tr th:nth-child(3){
+    color: green;
+    flex-grow: 2
+}
+
+table thead tr th:nth-child(4){
+    color: pink;
+    flex-grow: 1
+}
+
+
 table tbody {
     /* body takes all the remaining available space */
     flex: 1 1 auto;
@@ -26,10 +44,30 @@ table tbody tr {
 }
 
 table tbody tr {
-    display: table;
+    display: flex;
     width: 100%;
     table-layout: fixed;
 }
+
+table tbody tr td:nth-child(1){
+    color: red;
+    flex-grow: 4
+}
+table tbody tr td:nth-child(2){
+    color: blue;
+    flex-grow: 3
+}
+table tbody tr td:nth-child(3){
+    color: green;
+    flex-grow: 2
+}
+
+table tbody tr td:nth-child(4){
+    color: pink;
+    flex-grow: 1
+}
+
+
 /* decorations */
 .table-container {
     border: 1px solid black;

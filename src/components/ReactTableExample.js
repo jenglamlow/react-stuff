@@ -95,6 +95,7 @@ class ReactTableExample extends Component {
           data={data}
           minRows = {0}
           columns={columns}
+          // onSortedChange={(c, s) => { document.activeElement.blur(); }}
           className="-highlight"
           style={{
             height: "200px",
