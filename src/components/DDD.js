@@ -169,10 +169,9 @@ class DDD extends Component {
     hours = (hours < 10) ? "0" + hours : hours;
     minutes = (minutes < 10) ? "0" + minutes : minutes;
     seconds = (seconds < 10) ? "0" + seconds : seconds;
-    let frames = "00";
 
     // Temporary hardcode the frame to 00
-    return hours + ":" + minutes + ":" + seconds + ":00";
+    return hours + ":" + minutes + ":" + seconds;
   }
 
   createTimeline() {
