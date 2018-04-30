@@ -221,6 +221,17 @@ class DDD extends Component {
       .attr("stroke-width", 1)
       .attr("stroke", "yellow");
 
+    var timeGroup = this.svg.append('g')
+      .attr('class', 'time-indicator')
+      .attr('transform', 'translate(100, 19)');
+
+    timeGroup.append('path')
+      .attr('class', 'time-indicator__handle')
+      .attr('d', 'M -5 -3 L -5 5 L 0 10 L 5 5 L 5 -3 L -5 -3')
+      .attr("stroke", "rgb(45, 139, 235)")
+      .attr("fill", "rgb(45, 139, 235)");
+
+
     this.drawBox();
     
     // Register click event
