@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import * as d3 from 'd3';
+import $ from 'jquery';
 
 // slider
 import InputRange from 'react-input-range';
@@ -12,6 +13,10 @@ import './DDD.css';
 
 const SliderContainer = styled.div`
   padding: 30px;
+`;
+
+const TimeText = styled.div`
+  color: white;
 `;
 
 // Global Variable
@@ -59,7 +64,8 @@ class DDD extends Component {
       last: {
         max: 1030,
         min: 0
-      }
+      },
+      currentTime: 0
     };
 
     this.createTimeline = this.createTimeline.bind(this);
@@ -176,6 +182,7 @@ class DDD extends Component {
 
   createTimeline() {
     this.svg = d3.select(this.timeNode);
+    d3.timeFormat('%L');
 
     // Scale
     this.xScale = d3.scaleTime()
@@ -221,22 +228,53 @@ class DDD extends Component {
       .attr("stroke-width", 1)
       .attr("stroke", "yellow");
 
-    var timeGroup = this.svg.append('g')
-      .attr('class', 'time-indicator')
-      .attr('transform', 'translate(100, 19)');
+    var self = this;
+    var dragTimeMove = function(d) {
+      let currentTime = self.xScale.invert(d3.event.x).getTime();
+      console.log(self.xScale.invert(d3.event.x).getTime());
+      currentTime = Math.max(0, currentTime);
 
-    timeGroup.append('path')
+      self.setState({currentTime: currentTime});
+
+      let x = Math.max(0, d3.event.x);
+      self.timeLine.css('left', x);
+      d3.select(this).attr("transform", "translate(" + x + ", 19)");
+    };
+  
+
+    var dragTime = d3.drag()
+      .on('drag', dragTimeMove);
+
+    this.timeGroup = this.svg.append('g')
+      .attr('class', 'time-indicator')
+      .attr('transform', 'translate(100, 19)')
+      .call(dragTime);
+
+    this.timeScrubber = this.svg.selectAll('.time-indicator');
+
+    this.timeGroup.append('path')
       .attr('class', 'time-indicator__handle')
       .attr('d', 'M -5 -3 L -5 5 L 0 10 L 5 5 L 5 -3 L -5 -3')
       .attr("stroke", "rgb(45, 139, 235)")
       .attr("fill", "rgb(45, 139, 235)");
 
+    this.timeLine = $(".time-indicatior-line").css('left', '100px');
+
+    this.setState({currentTime: this.xScale.invert(100).getTime()}); 
 
     this.drawBox();
     
     // Register click event
     this.svg.on('click', function() {
-      console.log(d3.event.pageX);
+      let mouse = d3.mouse(this);
+      let currentTime = self.xScale.invert(mouse[0]).getTime();
+      currentTime = Math.max(0, currentTime);
+
+      self.setState({currentTime: currentTime});
+
+      let x = Math.max(0, d3.event.x);
+      self.timeLine.css('left', x);
+      self.timeScrubber.attr("transform", "translate(" + x + ", 19)");
     });
   }
 
@@ -252,6 +290,8 @@ class DDD extends Component {
     this.xAxisElement.call(this.xAxis);
     this.xGrid.call(this.xAxisGrid);
     this.videoLine.attr("d", this.videoLineScale);
+    this.timeScrubber.attr('transform', 'translate(' + this.xScale(this.state.currentTime) + ', 19)');
+    this.timeLine = $(".time-indicatior-line").css('left', this.xScale(this.state.currentTime));
 
     this.drawBox();
   }
@@ -295,6 +335,7 @@ class DDD extends Component {
         <svg ref={node => this.timeNode = node}
           width={this.state.width} height={canvasHeight}>
         </svg>
+        <div className="time-indicatior-line"/>
         <svg ref={node => this.insightNode = node}
           width={this.state.width} height={canvasHeight}>
         </svg>
@@ -308,6 +349,7 @@ class DDD extends Component {
             onChange={this.handleOnChange}
             value={this.state.value} />
         </SliderContainer>
+        <TimeText>{this.state.currentTime}</TimeText>
       </div>
     );
   }
