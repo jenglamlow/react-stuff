@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import Slider from 'rc-slider'; 
-import InputRange from 'react-input-range';
 
 const canvasHeight = 30;
 // Slider

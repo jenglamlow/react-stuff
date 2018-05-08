@@ -28,7 +28,6 @@ const videoLength = 60 * 4;
 const bufferVideo = videoLength * 1.5;
 let minToStart = 0;
 let endToMax = 0;
-const reso = 2;
 let steps = bufferVideo / (1000);
 
 const data = [{"x": 0 , "y":  29},

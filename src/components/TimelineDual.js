@@ -274,7 +274,7 @@ class TimelineDual extends Component {
     // steps = 2;
     let d = duration /1000;
 
-    if (mode =='pan') {
+    if (mode ==='pan') {
       start = start - (offsetR * diffPan);
       end = end - (offsetL * diffPan);
       start = start > 0 ? 0 : start;
@@ -294,15 +294,11 @@ class TimelineDual extends Component {
         remainingUnitL = (length * Math.pow(2, Q-1) * (scale % 1 + 1)) - length;
         offsetL = remainingUnitL/minToStart || 0;
       }
-      console.log(start, end);
     }
 
     steps = Math.pow(2, Math.ceil(Math.log2(steps)));
 
     let viewCount = length/units + 1;
-
-    let startLocation = Math.abs(start/units) * steps;
-    // console.log('start', startLocation, 'end', startLocation + (viewCount-1) * steps);   
 
     for (let i = 0; i < viewCount; i++)
     {
