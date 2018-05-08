@@ -68,10 +68,10 @@ class DDD extends Component {
       currentTime: 0
     };
 
+    this.dragFlag = false;
     this.createTimeline = this.createTimeline.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleOnChange = this.handleOnChange.bind(this);
-    this.zoomFunction = this.zoomFunction.bind(this);
   }
 
   //================================================================================
@@ -165,6 +165,10 @@ class DDD extends Component {
     return hours + ":" + minutes + ":" + seconds + ":" + frames;
   }
 
+  clamp(x, min, max) {
+    return Math.min(Math.max(x, min), max);
+  };
+
   secToTimecode(d) {
     // convert milliseconds to seconds
     let seconds = d;
@@ -231,14 +235,10 @@ class DDD extends Component {
     var self = this;
     var dragTimeMove = function(d) {
       let currentTime = self.xScale.invert(d3.event.x).getTime();
-      console.log(self.xScale.invert(d3.event.x).getTime());
-      currentTime = Math.max(0, currentTime);
-
+      currentTime = self.clamp(currentTime, 0, bufferVideo);
+      
       self.setState({currentTime: currentTime});
-
-      let x = Math.max(0, d3.event.x);
-      self.timeLine.css('left', x);
-      d3.select(this).attr("transform", "translate(" + x + ", 19)");
+      self.dragFlag = true;
     };
   
 
@@ -247,7 +247,7 @@ class DDD extends Component {
 
     this.timeGroup = this.svg.append('g')
       .attr('class', 'time-indicator')
-      .attr('transform', 'translate(100, 19)')
+      .attr('transform', 'translate(0, 19)')
       .call(dragTime);
 
     this.timeScrubber = this.svg.selectAll('.time-indicator');
@@ -258,9 +258,7 @@ class DDD extends Component {
       .attr("stroke", "rgb(45, 139, 235)")
       .attr("fill", "rgb(45, 139, 235)");
 
-    this.timeLine = $(".time-indicatior-line").css('left', '100px');
-
-    this.setState({currentTime: this.xScale.invert(100).getTime()}); 
+    this.timeScrubberLine = $(".time-indicatior-line");
 
     this.drawBox();
     
@@ -268,18 +266,11 @@ class DDD extends Component {
     this.svg.on('click', function() {
       let mouse = d3.mouse(this);
       let currentTime = self.xScale.invert(mouse[0]).getTime();
-      currentTime = Math.max(0, currentTime);
+      currentTime = self.clamp(currentTime, 0, bufferVideo);
 
+      // Update current time in store
       self.setState({currentTime: currentTime});
-
-      let x = Math.max(0, d3.event.x);
-      self.timeLine.css('left', x);
-      self.timeScrubber.attr("transform", "translate(" + x + ", 19)");
     });
-  }
-
-  zoomFunction() {
-    // this.svg.attr("transform", d3.event.transform);
   }
 
   renderTimeline() {   
@@ -290,10 +281,42 @@ class DDD extends Component {
     this.xAxisElement.call(this.xAxis);
     this.xGrid.call(this.xAxisGrid);
     this.videoLine.attr("d", this.videoLineScale);
-    this.timeScrubber.attr('transform', 'translate(' + this.xScale(this.state.currentTime) + ', 19)');
-    this.timeLine = $(".time-indicatior-line").css('left', this.xScale(this.state.currentTime));
 
+    this.renderTimeScrubber(this.xScale(this.state.currentTime));
     this.drawBox();
+  }
+
+  renderTimeScrubber(x) {
+    // Constrait x position within the timescale
+    let xPos = x;
+    // xPos = this.state.currentTime === 0 ? 0 : xPos;
+
+    if (xPos >= 0 && xPos <= this.state.width) {
+      this.timeScrubberLine.show();
+      this.timeScrubberLine.css({
+        'left': xPos, 
+        'height': this.state.insightHeight,
+      });
+    } else {
+      this.timeScrubberLine.hide();
+
+      if (this.dragFlag) {
+        this.dragFlag = false;
+        if (xPos < 0) {
+          minToStart -= 5;
+          endToMax += 5;
+        } else {
+          minToStart += 5;
+          endToMax -= 5;
+        }
+        this.setState({
+          value: {
+          max: Math.min(1030 - endToMax, 1030),
+          min: Math.max(0, minToStart),
+        }});
+      }
+    }
+    this.timeScrubber.attr("transform", "translate(" + xPos + ", 19)");
   }
 
   drawBox() {
@@ -349,7 +372,7 @@ class DDD extends Component {
             onChange={this.handleOnChange}
             value={this.state.value} />
         </SliderContainer>
-        <TimeText>{this.state.currentTime}</TimeText>
+        <TimeText>{this.state.currentTime} {minToStart} {endToMax} {this.dragFlag ? "true" : "false"}</TimeText>
       </div>
     );
   }
