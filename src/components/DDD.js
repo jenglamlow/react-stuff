@@ -24,7 +24,7 @@ const TimeText = styled.div`
 const canvasHeight = 30;
 const marginTop = 29;
 
-const videoLength = 60 * 4;
+const videoLength = 60 * 10;
 const bufferVideo = videoLength * 1.5;
 let minToStart = 0;
 let endToMax = 0;
@@ -68,6 +68,7 @@ class DDD extends Component {
     };
 
     this.dragFlag = false;
+    this.clickFlag = false;
     this.createTimeline = this.createTimeline.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.handleOnChange = this.handleOnChange.bind(this);
@@ -79,6 +80,7 @@ class DDD extends Component {
 
   componentDidMount() {
     window.addEventListener("resize", this.handleResize);
+    this.vid = document.getElementById("myVideo");
     this.createTimeline();
   }
 
@@ -257,7 +259,7 @@ class DDD extends Component {
       .attr("stroke", "rgb(45, 139, 235)")
       .attr("fill", "rgb(45, 139, 235)");
 
-    this.timeScrubberLine = $(".time-indicatior-line");
+    this.timeScrubberLine = $(".time-indicator-line");
 
     this.drawBox();
     
@@ -268,8 +270,21 @@ class DDD extends Component {
       currentTime = self.clamp(currentTime, 0, bufferVideo);
 
       // Update current time in store
+      self.clickFlag = true;
       self.setState({currentTime: currentTime});
     });
+
+    this.vid.ontimeupdate = function() {
+      if (self.clickFlag) return;
+      if (Math.floor(this.currentTime) !== self.state.currentTime) {
+        self.setState({currentTime: Math.floor(this.currentTime)});
+      }
+    };
+
+    this.vid.onseeked = function() {
+      self.clickFlag = false;
+      self.setState({currentTime: Math.floor(this.currentTime)});
+    };
   }
 
   renderTimeline() {   
@@ -283,12 +298,18 @@ class DDD extends Component {
 
     this.renderTimeScrubber(this.xScale(this.state.currentTime));
     this.drawBox();
+    if (this.dragFlag) {
+      this.dragFlag = false;
+      this.vid.currentTime = this.state.currentTime;
+    }
+    if (this.clickFlag) {
+      this.vid.currentTime = this.state.currentTime;
+    }
   }
 
   renderTimeScrubber(x) {
     // Constrait x position within the timescale
     let xPos = x;
-    // xPos = this.state.currentTime === 0 ? 0 : xPos;
 
     if (xPos >= 0 && xPos <= this.state.width) {
       this.timeScrubberLine.show();
@@ -313,6 +334,7 @@ class DDD extends Component {
           max: Math.min(1030 - endToMax, 1030),
           min: Math.max(0, minToStart),
         }});
+        this.vid.currentTime = this.state.currentTime;
       }
     }
     this.timeScrubber.attr("transform", "translate(" + xPos + ", 19)");
@@ -357,7 +379,7 @@ class DDD extends Component {
         <svg ref={node => this.timeNode = node}
           width={this.state.width} height={canvasHeight}>
         </svg>
-        <div className="time-indicatior-line"/>
+        <div className="time-indicator-line"/>
         <svg ref={node => this.insightNode = node}
           width={this.state.width} height={canvasHeight}>
         </svg>
@@ -372,6 +394,11 @@ class DDD extends Component {
             value={this.state.value} />
         </SliderContainer>
         <TimeText>{this.state.currentTime} {minToStart} {endToMax} {this.dragFlag ? "true" : "false"}</TimeText>
+        <video controls
+          id="myVideo"
+          controlsList="nodownload"
+          src="https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4"
+          width="320"></video>
       </div>
     );
   }

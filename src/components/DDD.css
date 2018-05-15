@@ -26,7 +26,7 @@ svg {
     user-select: none;
 }
 
-.time-indicatior-line {
+.time-indicator-line {
     position: absolute;
     width: 1px;
     top: 70px;
@@ -39,3 +39,7 @@ svg {
 body {
     overflow: hidden
 }
+
+/* video::-webkit-media-controls-timeline {
+    display: none;
+} */

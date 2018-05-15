@@ -58,17 +58,20 @@ const data = [{
 
 const columns = [{
   Header: 'Name',
-  accessor: 'name' // String-based value accessors!
+  accessor: 'name',
+  minWidth: 250
 }, {
   Header: 'Age',
   accessor: 'age',
-  Cell: props => <span className='number'>{props.value}</span> // Custom cell components!
+  maxWidth: 100,
 }, {
-  id: 'friendName', // Required because our accessor is not a string
+  id: 'friendName', 
   Header: 'Friend Name',
-  accessor: d => d.friend.name // Custom value accessors!
+  maxWidth: 70,
+  accessor: d => d.friend.name 
 }, {
-  Header: props => <span>Friend Age</span>, // Custom header components!
+  Header: 'Friend Age',
+  maxWidth: 70,
   accessor: 'friend.age'
 }];
 
@@ -82,7 +85,6 @@ class ReactTableExample extends Component {
 
   componentDidMount() {
     $(".rt-tbody").on("scroll", function() {
-      console.log('hey hey hey');
     });
   }
 
@@ -98,7 +100,7 @@ class ReactTableExample extends Component {
           className="-highlight"
           style={{
             height: "200px",
-            width: "800px"
+            // width: "800px"
           }}
           getTrGroupProps={(params, rowInfo) => {
             let style = {};
