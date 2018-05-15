@@ -134,7 +134,6 @@ class TimelineDual extends Component {
     const rect = this.canvasRef.getBoundingClientRect();
     let x = e.clientX - rect.left;
     let y = e.clientY - rect.top;
-    console.log("x coords: " + x + ", y coords: " + y);
   }
 
   handleOnChange(value) {
